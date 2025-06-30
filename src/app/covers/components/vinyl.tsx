@@ -1,20 +1,30 @@
 "use client"
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useRef, useEffect } from 'react';
 import gsap from 'gsap';
 import './vinyl.css';
+import { useAudio } from '../../../contexts/AudioContext';
 
 interface VinylProps {
     audioSrc: string;
     coverSrc: string;
+    title: string;
+    artist: string;
     vinylSrc: string;
     className?: string;
+    id?: string; // ID único para identificar este vinyl
 }
 
-const Vinyl: React.FC<VinylProps> = ({ audioSrc, coverSrc, vinylSrc }) => {
-    const [isPlaying, setIsPlaying] = useState(false);
+const Vinyl: React.FC<VinylProps> = ({ audioSrc, coverSrc, title, artist, vinylSrc, className = '', id }) => {
     const audioRef = useRef<HTMLAudioElement>(null);
     const vinylRef = useRef<HTMLImageElement>(null);
     const rotationTween = useRef<gsap.core.Tween | null>(null);
+
+    // Usar o contexto de áudio
+    const { isPlaying, playAudio, pauseAudio } = useAudio();
+
+    // Gerar ID único se não fornecido
+    const vinylId = id || `vinyl-${audioSrc.slice(-10)}`;
+    const isCurrentlyPlaying = isPlaying(vinylId);
 
     useEffect(() => {
         // Inicializa a animação parada
@@ -23,33 +33,11 @@ const Vinyl: React.FC<VinylProps> = ({ audioSrc, coverSrc, vinylSrc }) => {
         }
     }, []);
 
-    const handleVinylClick = () => {
-        if (audioRef.current && vinylRef.current) {
-            if (isPlaying) {
-                // Pausar áudio
-                audioRef.current.pause();
-                setIsPlaying(false);
-
-                // Para a animação com desaceleração gradual
-                if (rotationTween.current) {
-                    // Pega a rotação atual
-                    const currentRotation = gsap.getProperty(vinylRef.current, "rotation") as number;
-
-                    // Para a animação infinita
-                    rotationTween.current.kill();
-
-                    // Cria animação de desaceleração (mais 30 graus com ease out)
-                    handleVinylStopAnimation(currentRotation);
-                }
-            } else {
-                // Reproduzir áudio e animação
-                audioRef.current.play().catch(error => {
-                    console.error('Error playing audio:', error);
-                    setIsPlaying(false);
-                });
-                setIsPlaying(true);
-
-                // Cria nova animação infinita
+    // Sincronizar animação com o estado do contexto
+    useEffect(() => {
+        if (isCurrentlyPlaying) {
+            // Começar animação
+            if (vinylRef.current && !rotationTween.current) {
                 rotationTween.current = gsap.to(vinylRef.current, {
                     rotation: "+=360",
                     duration: 8,
@@ -57,30 +45,37 @@ const Vinyl: React.FC<VinylProps> = ({ audioSrc, coverSrc, vinylSrc }) => {
                     ease: "none"
                 });
             }
-        }
-    };
+        } else {
+            // Parar animação com desaceleração
+            if (rotationTween.current && vinylRef.current) {
+                const currentRotation = gsap.getProperty(vinylRef.current, "rotation") as number;
+                rotationTween.current.kill();
 
-    const handleVinylStopAnimation = (currentRotation: number) => {
-        gsap.to(vinylRef.current, {
-            rotation: currentRotation + 30,
-            duration: 2,
-            ease: "power3.out"
-        });
+                gsap.to(vinylRef.current, {
+                    rotation: currentRotation + 30,
+                    duration: 2,
+                    ease: "power3.out"
+                });
+
+                rotationTween.current = null;
+            }
+        }
+    }, [isCurrentlyPlaying]);
+
+    const handleVinylClick = () => {
+        if (isCurrentlyPlaying) {
+            pauseAudio(vinylId);
+        } else {
+            playAudio(vinylId, audioRef);
+        }
     };
 
     const handleAudioEnded = () => {
-        setIsPlaying(false);
-        if (rotationTween.current && vinylRef.current) {
-            // Para a animação com desaceleração quando o áudio termina
-            const currentRotation = gsap.getProperty(vinylRef.current, "rotation") as number;
-            rotationTween.current.kill();
-
-            handleVinylStopAnimation(currentRotation);
-        }
+        pauseAudio(vinylId);
     };
 
     return (
-        <div className={`flex flex-col`}>
+        <div className={`flex flex-col ${className}`}>
             <audio
                 style={{ display: 'none' }}
                 ref={audioRef}
@@ -91,14 +86,14 @@ const Vinyl: React.FC<VinylProps> = ({ audioSrc, coverSrc, vinylSrc }) => {
                     console.error('Audio error:', e);
                     console.error('Audio source:', audioSrc);
                 }}
-            // onLoadStart={() => console.log('Audio loading started')}
-            // onCanPlay={() => console.log('Audio can play')}
             />
-
+            <div>
+                <h1 className="text-3xl"><strong>{title}</strong></h1>
+                <div className="font-light"><span className='italic'>originally by:</span> {artist}</div>
+            </div>
             <div ref={vinylRef} className='vinyl_container' onClick={handleVinylClick} style={{ cursor: 'pointer' }}>
-                <img className='cover' src={coverSrc} alt="Album cover" />
+                <img className='cover' src={coverSrc || "/missiles.jpg"} alt="Album cover" />
                 <img
-
                     src={vinylSrc}
                     className="filter vinyl"
                     alt="Vinyl"

@@ -60,7 +60,7 @@ export const AudioProvider: React.FC<AudioProviderProps> = ({ children }) => {
 
   const pauseAll = () => {
     // Pausa todos os áudios registrados
-    audioRefs.current.forEach((audioRef, id) => {
+    audioRefs.current.forEach((audioRef) => {
       if (audioRef.current) {
         audioRef.current.pause();
       }

@@ -1,0 +1,67 @@
+.vinyl {
+    width: 500px;
+    height: 500px;
+    position: relative;
+    border-radius: 50%;
+    overflow: hidden;
+}
+
+.vinyl::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 4px;
+    height: 50%;
+    background: linear-gradient(to bottom, transparent 0%, rgba(255,255,255,0.3) 20%, rgba(255,255,255,0.6) 50%, rgba(255,255,255,0.3) 80%, transparent 100%);
+    animation: moveLight 10s linear infinite;
+    pointer-events: none;
+    z-index: 2;
+    transform-origin: top center;
+    transform: translate(-50%, -100%) rotate(45deg);
+}
+
+.vinyl_container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+.cover {
+    width: 135px;
+    height: 135px;
+    object-fit: cover;
+    border-radius: 50%;
+    position: absolute;
+    z-index: 1;
+}
+
+@keyframes spinVinyl {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes moveLight {
+    0% {
+        transform: translateX(0);
+    }
+    25% {
+        transform: translateX(5%);
+    }
+    50% {
+        transform: translateX(0%);
+    }
+    75% {
+        transform: translateX(-5%);
+    }
+    100% {
+        transform: translateX(0);
+    }
+}

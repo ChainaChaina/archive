@@ -1,7 +1,7 @@
 export default function Home() {
   return (
-    <div>
-      <h1 style={{ fontFamily: "var(--font-montserrat)" }} className="text-3xl">
+    <div className="flex flex-col">
+      <h1 style={{ fontFamily: "var(--font-montserrat)" }}>
         Título com Montserrat
       </h1>
       <p style={{ fontFamily: "var(--font-roboto)" }}>

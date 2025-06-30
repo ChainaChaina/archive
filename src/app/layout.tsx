@@ -34,20 +34,27 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`antialiased ${monda.variable} ${montserrat.variable} ${oswald.variable} ${roboto.variable} p-5`}
+        className={`antialiased ${monda.variable} ${montserrat.variable} ${oswald.variable} ${roboto.variable} box-border p-5 gap-2 min-h-screen flex flex-col `}
       >
         <RouteTitle />
-        <div className="flex  gap-5">
+        <div className="flex gap-2 flex-1">
           <p
             style={{
               fontFamily: "var(--font-roboto)",
               writingMode: "vertical-rl",
               transform: "rotate(-180deg)",
+              marginBottom: "auto",
+            
             }}
           >
-           Lucas Borges
+            Lucas Borges
           </p>
-          {children}
+            <div
+              className="flex-1 overflow-y-auto p-2"
+              style={{ maxHeight: "90vh" }}
+            >
+              {children}
+            </div>
         </div>
       </body>
     </html>

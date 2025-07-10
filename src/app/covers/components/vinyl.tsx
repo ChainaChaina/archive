@@ -20,11 +20,12 @@ const Vinyl: React.FC<VinylProps> = ({ audioSrc, coverSrc, title, artist, vinylS
     const rotationTween = useRef<gsap.core.Tween | null>(null);
 
     // Usar o contexto de áudio
-    const { isPlaying, playAudio, pauseAudio } = useAudio();
+    const { isPlaying, playAudio, pauseAudio, hasError, setAudioError } = useAudio();
 
     // Gerar ID único se não fornecido
     const vinylId = id || `vinyl-${audioSrc.slice(-10)}`;
     const isCurrentlyPlaying = isPlaying(vinylId);
+    const hasAudioError = hasError(vinylId);
 
     useEffect(() => {
         // Inicializa a animação parada
@@ -63,6 +64,11 @@ const Vinyl: React.FC<VinylProps> = ({ audioSrc, coverSrc, title, artist, vinylS
     }, [isCurrentlyPlaying]);
 
     const handleVinylClick = () => {
+        // Não permitir clique se houver erro
+        if (hasAudioError) {
+            return;
+        }
+
         if (isCurrentlyPlaying) {
             pauseAudio(vinylId);
         } else {
@@ -74,25 +80,50 @@ const Vinyl: React.FC<VinylProps> = ({ audioSrc, coverSrc, title, artist, vinylS
         pauseAudio(vinylId);
     };
 
+    const handleAudioError = (e: any) => {
+        console.error('Audio error:', e);
+        console.error('Audio source:', audioSrc);
+        console.error('Audio title:', title, 'by', artist);
+        
+        // Marcar como erro no contexto
+        setAudioError(vinylId);
+        
+        // Mostrar alerta para o usuário
+    };
+
     return (
-        <div className={`flex flex-col ${className}`}>
+        <div className={`flex flex-col ${className} ${hasAudioError ? 'opacity-30 pointer-events-none' : ''}`}>
             <audio
                 style={{ display: 'none' }}
                 ref={audioRef}
                 controls
                 src={audioSrc}
                 onEnded={handleAudioEnded}
-                onError={(e) => {
-                    console.error('Audio error:', e);
-                    console.error('Audio source:', audioSrc);
-                }}
+                onError={handleAudioError}
             />
-            <div>
-                <h1 className="text-3xl"><strong>{title}</strong></h1>
-                <div className="font-light"><span className='italic'>originally by:</span> {artist}</div>
+            <div className={hasAudioError ? 'opacity-70' : ''}>
+                <h1 className="text-3xl">
+                    <strong>{title}</strong>
+                </h1>
+                <div className="font-light">
+                    <span className='italic'>originally by:</span> {artist}
+                </div>
+                    {hasAudioError && <span className="text-red-500 text-sm ml-2">(Erro no áudio)</span>}
             </div>
-            <div ref={vinylRef} className='vinyl_container' onClick={handleVinylClick} style={{ cursor: 'pointer' }}>
-                <img className='cover' src={coverSrc || "/missiles.jpg"} alt="Album cover" />
+            <div 
+                ref={vinylRef} 
+                className={`vinyl_container ${hasAudioError ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer'}`} 
+                onClick={handleVinylClick}
+                style={{ 
+                    cursor: hasAudioError ? 'not-allowed' : 'pointer',
+                    filter: hasAudioError ? 'grayscale(100%)' : 'none'
+                }}
+            >
+                <img 
+                    className='cover' 
+                    src={coverSrc || "/missiles.jpg"} 
+                    alt="Album cover" 
+                />
                 <img
                     src={vinylSrc}
                     className="filter vinyl"

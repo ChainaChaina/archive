@@ -8,6 +8,9 @@ interface AudioContextType {
   playAudio: (id: string, audioRef: React.RefObject<HTMLAudioElement>) => void;
   pauseAudio: (id: string) => void;
   pauseAll: () => void;
+  erroredAudios: Set<string>;
+  setAudioError: (id: string) => void;
+  hasError: (id: string) => boolean;
 }
 
 const AudioContext = createContext<AudioContextType | undefined>(undefined);
@@ -26,10 +29,23 @@ interface AudioProviderProps {
 
 export const AudioProvider: React.FC<AudioProviderProps> = ({ children }) => {
   const [currentPlaying, setCurrentPlaying] = useState<string | null>(null);
+  const [erroredAudios, setErroredAudios] = useState<Set<string>>(new Set());
   const audioRefs = useRef<Map<string, React.RefObject<HTMLAudioElement>>>(new Map());
 
   const isPlaying = (id: string) => {
     return currentPlaying === id;
+  };
+
+  const hasError = (id: string) => {
+    return erroredAudios.has(id);
+  };
+
+  const setAudioError = (id: string) => {
+    setErroredAudios(prev => new Set(prev).add(id));
+    // Parar o áudio atual se for o que deu erro
+    if (currentPlaying === id) {
+      setCurrentPlaying(null);
+    }
   };
 
   const playAudio = (id: string, audioRef: React.RefObject<HTMLAudioElement>) => {
@@ -74,7 +90,10 @@ export const AudioProvider: React.FC<AudioProviderProps> = ({ children }) => {
     isPlaying,
     playAudio,
     pauseAudio,
-    pauseAll
+    pauseAll,
+    erroredAudios,
+    setAudioError,
+    hasError
   };
 
   return (

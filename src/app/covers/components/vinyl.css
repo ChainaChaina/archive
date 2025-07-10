@@ -80,3 +80,35 @@
         transform: translateX(0);
     }
 }
+
+/* Estados de erro */
+.vinyl-error {
+    opacity: 0.3;
+    filter: grayscale(100%);
+    pointer-events: none;
+    transition: all 0.3s ease;
+}
+
+.vinyl-error .vinyl_container {
+    cursor: not-allowed !important;
+}
+
+.vinyl-error .cover {
+    filter: grayscale(100%) brightness(0.7);
+}
+
+/* Animação de piscar para erro */
+@keyframes errorPulse {
+    0%, 50%, 100% { opacity: 0.3; }
+    25%, 75% { opacity: 0.5; }
+}
+
+.vinyl-error-pulse {
+    animation: errorPulse 2s infinite;
+}
+
+/* Estados de hover desabilitados para erro */
+.vinyl-error:hover {
+    transform: none !important;
+    scale: 1 !important;
+}

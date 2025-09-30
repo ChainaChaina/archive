@@ -3,6 +3,7 @@ import "./globals.css";
 import React from "react";
 import RouteTitle from "./RouteTitle";
 import { AudioProvider } from "../contexts/AudioContext";
+import CookieManager from "../components/CookieManager";
 
 const monda = Monda({
   subsets: ["latin"],
@@ -38,6 +39,7 @@ export default function RootLayout({
         className={`antialiased ${monda.variable} ${montserrat.variable} ${oswald.variable} ${roboto.variable} box-border p-5 gap-2 min-h-screen flex flex-col `}
       >
         <AudioProvider>
+          <CookieManager />
           <RouteTitle />
           <div className="flex gap-2 flex-1">
             <p
